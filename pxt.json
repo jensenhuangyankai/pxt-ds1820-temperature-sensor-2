@@ -4,15 +4,10 @@
     "description": "Environment and Science IoT Kit for micro:bit",
     "license": "MIT",
     "dependencies": {
-        "core": "*",
-        "SSD1306_OLED": "github:tinkertanker/pxt-oled-ssd1306",
-        "ds1307": "github:elecfreaks/pxt-ds1307-rtc",
-        "ESP8266_IoT": "github:elecfreaks/pxt-esp8266iot"
+        "core": "*"
     },
     "files": [
-        "environment.ts",
-        "README.md",
-        "_locales/zh/Environment-and-Science-IoT-strings.json"
+        "DS1820.ts"
     ],
     "testFiles": [
         "tests.ts"
