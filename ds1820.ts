@@ -41,7 +41,7 @@ namespace ds1820 {
         return reply
     }
 
-    //% block="hello"
+    //% block="hello get pin on %DSPin"
     //% weight=3
     export function tempDS1820(DSPin: DigitalPin){
         resetDS1820(DSPin)
