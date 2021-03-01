@@ -1,7 +1,4 @@
-/**
- * Custom blocks
- */
-//% color=#ff7a4b icon="\uf0ee" block="yEs"
+//% color=#27b0ba icon="\uf26c" block="Basic Blocks"
 namespace ds1820 {
     function resetDS1820(DSpin: DigitalPin){
         pins.digitalWritePin(DSpin,0)
@@ -46,7 +43,7 @@ namespace ds1820 {
 
     //% block="hello"
     //% weight=3
-    function tempDS1820(DSPin: DigitalPin){
+    export function tempDS1820(DSPin: DigitalPin){
         resetDS1820(DSPin)
         writeDS1820(DSPin,0xCC)
         writeDS1820(DSPin,0x44)
