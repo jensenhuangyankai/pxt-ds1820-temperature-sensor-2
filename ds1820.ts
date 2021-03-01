@@ -1,87 +1,62 @@
 /**
  * Custom blocks
  */
-//% color=#ff7a4b icon="\uf0ee" block="Octopus"
-namespace Environment {
-let sc_byte = 0
-    let dat = 0
-    let low = 0
-    let high = 0
-    let temp = 0
-    let temperature = 0
-    let ack = 0
-    let lastTemp = 0
-    export enum ValType {
-        //% block="temperature(℃)" enumval=0
-        DS18B20_temperature_C,
+//% color=#ff7a4b icon="\uf0ee" block="yEs"
+namespace ds1820 {
+    function resetDS1820(DSpin: DigitalPin){
+        pins.digitalWritePin(DSpin,0)
+        control.waitMicros(500)
+        let response:Number = pins.digitalReadPin(DSpin)
+        return response
+    }
 
-        //% block="temperature(℉)" enumval=1
-        DS18B20_temperature_F
-    }
-    function init_18b20(mpin:DigitalPin) {
-        pins.digitalWritePin(mpin, 0)
-        control.waitMicros(600)
-        pins.digitalWritePin(mpin, 1)
-        control.waitMicros(30)
-        ack = pins.digitalReadPin(mpin)
-        control.waitMicros(600)
-        return ack
-    }
-    function write_18b20 (mpin:DigitalPin,data: number) {
-        sc_byte = 0x01
-        for (let index = 0; index < 8; index++) {
-            pins.digitalWritePin(mpin, 0)
-            if (data & sc_byte) {
-                pins.digitalWritePin(mpin, 1)
-                control.waitMicros(60)
-            } else {
-                pins.digitalWritePin(mpin, 0)
+    function writeDS1820(DSpin: DigitalPin, data: Number){
+        let dataString = data.toString()
+        let bytes = parseInt(dataString, 16);
+        for (let i = 0; i < dataString.length; i++){
+            let bit = dataString[i]
+            if (parseInt(bit) == 1){
+                pins.digitalWritePin(DSpin,0)
+                control.waitMicros(10)
+                pins.digitalReadPin(DSpin)
                 control.waitMicros(60)
             }
-            pins.digitalWritePin(mpin, 1)
-            data = data >> 1
+            if (parseInt(bit) == 0){
+                pins.digitalWritePin(DSpin,0)
+                control.waitMicros(60)    
+                control.waitMicros(2)
+            }
         }
     }
-    function read_18b20 (mpin:DigitalPin) {
-        dat = 0x00
-        sc_byte = 0x01
-        for (let index = 0; index < 8; index++) {
-            pins.digitalWritePin(mpin, 0)
-            pins.digitalWritePin(mpin, 1)
-            if (pins.digitalReadPin(mpin)) {
-                dat = dat + sc_byte
-            }
-            sc_byte = sc_byte << 1
+    
+    function readDS1820(DSpin: DigitalPin){
+        pins.digitalWritePin(DSpin,0)
+        control.waitMicros(1)
+        let reply = 0
+        for (let i = 0;i<8;i++){
+            //read 8 bits
+            control.waitMicros(1)
+            let ack = pins.digitalReadPin(DSpin)
+            reply = (reply << 1) | ack     
             control.waitMicros(60)
         }
-        return dat
+        
+        return reply
     }
-    //% block="value of DS18B20 %state at pin %pin"
-    export function Ds18b20Temp(pin:DigitalPin,state:ValType):number{
-        init_18b20(pin)
-        write_18b20(pin,0xCC)
-        write_18b20(pin,0x44)
-        basic.pause(10)
-        init_18b20(pin)
-        write_18b20(pin,0xCC)
-        write_18b20(pin,0xBE)
-        low = read_18b20(pin)
-        high = read_18b20(pin)
-        temperature = high << 8 | low
-        temperature = temperature / 16
-        if(temperature > 130){
-            temperature = lastTemp
+
+    //% block="hello"
+    //% weight=3
+    function tempDS1820(DSPin: DigitalPin){
+        resetDS1820(DSPin)
+        writeDS1820(DSPin,0xCC)
+        writeDS1820(DSPin,0x44)
+        //reading temperature
+        let temp = 0
+        for (let i = 0; i<2; i++){
+            let response = readDS1820(DSPin)
+            temp = (temp << 8)| response
         }
-        lastTemp = temperature
-        switch (state) {
-            case ValType.DS18B20_temperature_C:
-                return temperature
-            case ValType.DS18B20_temperature_F:
-                temperature = temperature * 33.8
-                return temperature
-            default:
-                return 0
-        }
+        return temp
 
     }
 }
